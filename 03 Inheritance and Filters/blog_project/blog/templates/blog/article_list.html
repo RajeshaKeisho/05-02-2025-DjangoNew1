@@ -1,0 +1,27 @@
+{% extends "blog/base.html" %}
+{% load custom_filters %}
+{% block title %}Article List{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">Articles</h2>
+    <div class="list-group">
+        {% for article in articles %}
+            <div class="list-group-item">
+                <h5>{{ article.title|title }}</h5> {# Built-in filter: title case #}
+                
+                <p>
+                    {{ article.content|word_limit:20 }} <br>
+                    <strong>First word:</strong> {{ article.content|first_word }} |
+                    <strong>Last word:</strong> {{ article.content|last_word }} |
+                    <strong>Char count:</strong> {{ article.content|char_count }}
+                </p>
+
+                <p class="text-muted">
+                    Word Count: {{ article.content|word_count }} |
+                    Published: {{ article.created_at|date:"F j, Y" }} |
+                    Slugified Title: {{ article.title|slugify }}
+                </p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
