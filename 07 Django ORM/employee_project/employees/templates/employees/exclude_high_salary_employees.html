@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excluded High Salary Employees</title>
+</head>
+<body>
+    <h1>Employees Excluded Based on Salary</h1>
+    <ul>
+        {% for employee in excluded_employees %}
+            <li>{{ employee.name }} - Salary: {{ employee.salary }}</li>
+        {% empty %}
+            <li>No employees found with salaries less than or equal to $60,000.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
