@@ -1,0 +1,46 @@
+{% extends "api/base.html" %}
+
+{% block title %}API Throttling Demo - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>API Throttling Demo</h1>
+        <p class="lead">This project demonstrates different throttling rates for:</p>
+        <ul>
+            <li>Anonymous users: 5 requests per minute</li>
+            <li>Regular users: 60 requests per minute</li>
+            <li>Premium users: 500 requests per minute</li>
+        </ul>
+        
+        {% if not user.is_authenticated %}
+            <div class="alert alert-info">
+                <a href="{% url 'login' %}" class="alert-link">Login</a> to test different user levels.
+            </div>
+        {% else %}
+            <div class="alert alert-success">
+                You're logged in as {% if user.is_premium %}<strong>Premium</strong>{% else %}Regular{% endif %} user.
+                <a href="{% url 'api-books' %}" class="alert-link">Test the Books API</a> or
+                <a href="{% url 'api-throttle-test' %}" class="alert-link">Test Throttling</a>.
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                Current Throttle Status
+            </div>
+            <div class="card-body">
+                {% if user.is_authenticated %}
+                    <p>User type: {% if user.is_premium %}Premium{% else %}Regular{% endif %}</p>
+                    <p>Your rate limit: {% if user.is_premium %}500/min{% else %}60/min{% endif %}</p>
+                {% else %}
+                    <p>User type: Anonymous</p>
+                    <p>Rate limit: 5/min</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

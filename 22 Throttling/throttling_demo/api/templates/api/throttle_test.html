@@ -1,0 +1,175 @@
+{% extends "api/base.html" %}
+
+{% block title %}API Throttling Demo - Throttle Test{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>Throttle Testing</h1>
+        <p>Test how quickly you hit your rate limits.</p>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                Rapid Requests Test
+            </div>
+            <div class="card-body">
+                <button id="rapidTestBtn" class="btn btn-primary">Start Rapid Requests</button>
+                <button id="stopTestBtn" class="btn btn-danger" disabled>Stop</button>
+                
+                <div class="mt-3">
+                    <label for="requestDelay" class="form-label">Delay between requests (ms):</label>
+                    <input type="number" id="requestDelay" class="form-control" value="100">
+                </div>
+                
+                <div id="testResults" class="mt-3">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Request #</th>
+                                <th>Status</th>
+                                <th>Response</th>
+                                <th>Remaining</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                Your Throttle Limits
+            </div>
+            <div class="card-body">
+                {% if user.is_authenticated %}
+                    <p>User type: <strong>{% if user.is_premium %}Premium{% else %}Regular{% endif %}</strong></p>
+                    <p>Rate limit: <strong>{% if user.is_premium %}500{% else %}60{% endif %} requests/minute</strong></p>
+                {% else %}
+                    <p>User type: <strong>Anonymous</strong></p>
+                    <p>Rate limit: <strong>5 requests/minute</strong></p>
+                {% endif %}
+                
+                <div class="progress mt-3">
+                    <div id="limitProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <p id="limitText" class="text-center mt-1">0/{% if user.is_authenticated %}{% if user.is_premium %}500{% else %}60{% endif %}{% else %}5{% endif %} requests</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let testInterval;
+    let requestCount = 0;
+    let successfulRequests = 0;
+    let failedRequests = 0;
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Update progress bar
+    function updateProgress(count) {
+        const max = {% if user.is_authenticated %}{% if user.is_premium %}500{% else %}60{% endif %}{% else %}5{% endif %};
+        const percentage = Math.min(100, (count / max) * 100);
+        document.getElementById('limitProgress').style.width = `${percentage}%`;
+        
+        if (percentage > 80) {
+            document.getElementById('limitProgress').classList.remove('bg-success');
+            document.getElementById('limitProgress').classList.add('bg-warning');
+        }
+        if (percentage >= 100) {
+            document.getElementById('limitProgress').classList.remove('bg-warning');
+            document.getElementById('limitProgress').classList.add('bg-danger');
+        }
+        
+        document.getElementById('limitText').textContent = `${count}/${max} requests`;
+    }
+    
+    // Start rapid test
+    document.getElementById('rapidTestBtn').addEventListener('click', function() {
+        const delay = parseInt(document.getElementById('requestDelay').value) || 100;
+        const resultsTable = document.getElementById('resultsTable');
+        resultsTable.innerHTML = '';
+        requestCount = 0;
+        successfulRequests = 0;
+        failedRequests = 0;
+        
+        document.getElementById('rapidTestBtn').disabled = true;
+        document.getElementById('stopTestBtn').disabled = false;
+        
+        testInterval = setInterval(function() {
+            requestCount++;
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${requestCount}</td><td class="status-cell">Pending...</td><td>-</td><td>-</td>`;
+            resultsTable.prepend(row);
+            
+            fetch('/api/books/')
+                .then(response => {
+                    const statusCell = row.querySelector('.status-cell');
+                    const limit = response.headers.get('X-RateLimit-Remaining');
+                    
+                    if (response.ok) {
+                        successfulRequests++;
+                        statusCell.innerHTML = '<span class="badge bg-success">Success</span>';
+                        row.cells[2].textContent = '200 OK';
+                        row.cells[3].textContent = limit !== null ? limit : 'Unknown';
+                    } else {
+                        failedRequests++;
+                        statusCell.innerHTML = '<span class="badge bg-danger">Failed</span>';
+                        row.cells[2].textContent = `${response.status} ${response.statusText}`;
+                        row.cells[3].textContent = limit !== null ? limit : 'Unknown';
+                    }
+                    
+                    updateProgress(successfulRequests + failedRequests);
+                    
+                    if (response.status === 429) {
+                        // Throttled - stop the test
+                        clearInterval(testInterval);
+                        document.getElementById('rapidTestBtn').disabled = false;
+                        document.getElementById('stopTestBtn').disabled = true;
+                        
+                        const waitTime = response.headers.get('Retry-After') || 'unknown';
+                        alert(`You've been throttled! Try again after ${waitTime} seconds.`);
+                    }
+                    
+                    return response.json().catch(() => ({}));
+                })
+                .catch(error => {
+                    failedRequests++;
+                    const statusCell = row.querySelector('.status-cell');
+                    statusCell.innerHTML = '<span class="badge bg-danger">Error</span>';
+                    row.cells[2].textContent = error.message;
+                    updateProgress(successfulRequests + failedRequests);
+                });
+        }, delay);
+    });
+    
+    // Stop test
+    document.getElementById('stopTestBtn').addEventListener('click', function() {
+        clearInterval(testInterval);
+        document.getElementById('rapidTestBtn').disabled = false;
+        document.getElementById('stopTestBtn').disabled = true;
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
