@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+<h1>User Profile</h1>
+<p>Username: {{ user.username }}</p>
+<p>Email: {{ user.email }}</p>
+<a href="{% url 'logout' %}">Logout</a>
+<div id="articles">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/articles/')
+        .then(response => response.json())
+        .then(data => {
+            const articlesContainer = document.getElementById('articles');
+            data.forEach(article => {
+                const articleElement = document.createElement('div');
+                articleElement.innerHTML = `<h2>${article.title}</h2><p>${article.content}</p>`;
+                articlesContainer.appendChild(articleElement);
+            });
+        })
+        .catch(error => console.error('Error fetching data:', error));
+});
+</script>
+{% endblock %}
+
