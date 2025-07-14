@@ -1,0 +1,93 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+header {
+    background: #35424a;
+    color: #ffffff;
+    padding-top: 30px;
+    min-height: 70px;
+    border-bottom: #e8491d 3px solid;
+}
+
+header h1 {
+    text-align: center;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+nav ul {
+    padding: 0;
+    list-style: none;
+    background: #333;
+    text-align: center;
+}
+
+nav ul li {
+    display: inline;
+}
+
+nav ul li a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 18px;
+    padding: 10px 20px;
+    display: inline-block;
+}
+
+nav ul li a:hover {
+    background: #e8491d;
+}
+
+main {
+    padding: 20px;
+    background: #ffffff;
+    margin-top: 20px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background: #333;
+    color: #ffffff;
+    margin-top: 20px;
+    border-top: #e8491d 3px solid;
+}
+
+.pagination {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.pagination .step-links a {
+    color: #35424a;
+    text-decoration: none;
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    margin: 0 2px;
+    border-radius: 4px;
+}
+
+.pagination .step-links a:hover {
+    background-color: #e8491d;
+    color: #fff;
+}
+
+.pagination .step-links .current {
+    background-color: #35424a;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    margin: 0 2px;
+}

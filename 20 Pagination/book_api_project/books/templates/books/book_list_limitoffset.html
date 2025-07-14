@@ -1,0 +1,54 @@
+{% extends "base_generic.html" %}
+
+{% load custom_filters %}
+
+
+{% block content %}
+  <h1>Book List</h1>
+
+  <!-- Display the book list -->
+  <ul>
+    {% for book in object_list %}
+      <li>{{ book.title }} - {{ book.author }}</li>
+    {% empty %}
+      <p>No books available.</p>
+    {% endfor %}
+  </ul>
+
+  <!-- Pagination controls -->
+  {% if is_paginated %}
+    <div class="pagination">
+      <!-- Previous button -->
+      {% if page_obj.has_previous %}
+        <a href="?limit={{ limit }}&offset={{ page_obj.previous_page_number|add:-1|times:limit }}">{{ page_obj.previous_page_number }}</a>
+      {% else %}
+        <span>Previous</span>
+      {% endif %}
+
+      <!-- Page numbers -->
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+      <!-- Next button -->
+      {% if page_obj.has_next %}
+        <a href="?limit={{ limit }}&offset={{ page_obj.next_page_number|add:-1|times:limit }}">{{ page_obj.next_page_number }}</a>
+      {% else %}
+        <span>Next</span>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <!-- Limit and offset control -->
+  <div>
+    <form method="get">
+      <label for="limit">Items per page:</label>
+      <select name="limit" id="limit">
+        <option value="5" {% if limit == 5 %}selected{% endif %}>5</option>
+        <option value="10" {% if limit == 10 %}selected{% endif %}>10</option>
+        <option value="15" {% if limit == 15 %}selected{% endif %}>15</option>
+      </select>
+
+      <input type="hidden" name="offset" value="{{ offset }}">
+      <button type="submit">Update</button>
+    </form>
+  </div>
+{% endblock %}

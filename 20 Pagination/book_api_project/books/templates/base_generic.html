@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Book List{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{% block header %}My Book Collection{% endblock %}</h1>
+        </header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'book-list-page-number' %}">Page Number Pagination</a></li>
+                <li><a href="{% url 'book-list-limit-offset' %}">Limit Offset Pagination</a></li>
+                <li><a href="{% url 'book-list-cursor' %}">Cursor Pagination</a></li>
+            </ul>
+        </nav>
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+        <footer>
+            <p>&copy; 2024 My Book Collection</p>
+        </footer>
+    </div>
+</body>
+</html>
